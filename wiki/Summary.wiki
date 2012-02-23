@@ -31,10 +31,14 @@ Regularly the program save results to a file.
 
 = Articles on our implementation of molecular dynamics on GPU =
 
-A.S. Boyarchenkov, S.I. Potashnikov, Numerical methods and programming 10, 9 (2009). [http://num-meth.srcc.msu.ru/english/zhurnal/tom_2009/v10r102.html Abstract]
+  * A.S. Boyarchenkov, S.I. Potashnikov, Numerical methods and programming 10, 9 (2009). [http://num-meth.srcc.msu.ru/english/zhurnal/tom_2009/v10r102.html]
+  * A.S. Boyarchenkov, S.I. Potashnikov, Numerical methods and programming 10, 158 (2009). [http://num-meth.srcc.msu.ru/english/zhurnal/tom_2009/v10r119.html]
 
-A.S. Boyarchenkov, S.I. Potashnikov, Numerical methods and programming 10, 158 (2009). [http://num-meth.srcc.msu.ru/english/zhurnal/tom_2009/v10r119.html]
+= Articles with our results obtained using this technology =
 
-= Articles with results obtained using this technology =
+  * A.S. Boyarchenkov, S.I. Potashnikov, K.A. Nekrasov, A.Ya. Kupryazhkin. Journal of Nuclear Materials 421, 1 (2012). [http://dx.doi.org/10.1016/j.jnucmat.2011.11.030]
+  * S.I. Potashnikov, A.S. Boyarchenkov, K.A. Nekrasov, A.Ya. Kupryazhkin. Journal of Nuclear Materials 419, 217 (2011). [http://dx.doi.org/10.1016/j.jnucmat.2011.08.033]
+  * S.I. Potashnikov, A.S. Boyarchenkov, K.A. Nekrasov, A.Ya. Kupryazhkin, ISJAEE 8(52), 43 (2007). [http://isjaee.hydrogen.ru/pdf/AEE0807/AEE08-07_Potashnikov.pdf] (in Russian)
+  * S.I. Potashnikov, A.S. Boyarchenkov, K.A. Nekrasov, A.Ya. Kupryazhkin, ISJAEE 5 (2007) 86. [http://isjaee.hydrogen.ru/pdf/AEE0507/ISJAEE05-07_Potashnikov.pdf] (in Russian)
 
 = See also =
