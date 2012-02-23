@@ -1,0 +1,44 @@
+#summary Summary of iD-GPU project.
+
+= Введение =
+
+The current version has the following capabilities:
+
+  * Molecular dynamics simulation of uranium dioxide
+  * Isolated boundary conditions (systems with free surface)
+  * Approximation of pair potentials and rigid ions
+  * Using GPU for computation of pair forces and energy
+  * Computation of lattice period and total energy of the system
+
+= Requirements =
+
+== For execution: ==
+  * 64-bit version of Microsoft Windows
+  * Microsoft DirectX 11
+  * Microsoft .NET Framework 4.0
+  * DirectX 11 compatible graphics card (CPU-only computation is also possible)
+
+== For compilation: ==
+  * Microsoft Visual C# 2010
+
+= Input and output =
+
+You need to specify parameters of simulation in the source code except the sets of pair potentials and some parameters influencing speed of GPU computation.
+
+The progress of simulation is shown in the title of the window and its single textbox.
+
+Regularly the program save results to a file.
+
+= Articles on our implementation of molecular dynamics on GPU =
+
+  * A.S. Boyarchenkov, S.I. Potashnikov, Numerical methods and programming 10, 9-23 (2009). [http://num-meth.srcc.msu.ru/english/zhurnal/tom_2009/v10r102.html]
+  * A.S. Boyarchenkov, S.I. Potashnikov, Numerical methods and programming 10, 158-175 (2009). [http://num-meth.srcc.msu.ru/english/zhurnal/tom_2009/v10r119.html]
+
+= Articles with our results obtained using this technology =
+
+  * A.S. Boyarchenkov, S.I. Potashnikov, K.A. Nekrasov, A.Ya. Kupryazhkin. Journal of Nuclear Materials 421, 1-8 (2012). [http://dx.doi.org/10.1016/j.jnucmat.2011.11.030]
+  * S.I. Potashnikov, A.S. Boyarchenkov, K.A. Nekrasov, A.Ya. Kupryazhkin. Journal of Nuclear Materials 419, 217-225 (2011). [http://dx.doi.org/10.1016/j.jnucmat.2011.08.033]
+  * S.I. Potashnikov, A.S. Boyarchenkov, K.A. Nekrasov, A.Ya. Kupryazhkin, ISJAEE 8(52), 43-52 (2007). [http://isjaee.hydrogen.ru/pdf/AEE0807/AEE08-07_Potashnikov.pdf] (in Russian)
+  * S.I. Potashnikov, A.S. Boyarchenkov, K.A. Nekrasov, A.Ya. Kupryazhkin, ISJAEE 5, 86-93 (2007). [http://isjaee.hydrogen.ru/pdf/AEE0507/ISJAEE05-07_Potashnikov.pdf] (in Russian)
+
+= See also =
