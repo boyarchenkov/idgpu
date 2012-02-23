@@ -40,5 +40,5 @@ Regularly the program save results to a file.
   * S.I. Potashnikov, A.S. Boyarchenkov, K.A. Nekrasov, A.Ya. Kupryazhkin. High-precision molecular dynamics simulation of UO2–PuO2: pair potentials comparison in UO2. Journal of Nuclear Materials 419, 217-225 (2011). [http://dx.doi.org/10.1016/j.jnucmat.2011.08.033]
   * S.I. Potashnikov, A.S. Boyarchenkov, K.A. Nekrasov, A.Ya. Kupryazhkin, Molecular dynamics fitting of interatomic pair potentials in uranium dioxide by thermal expansion. ISJAEE 8(52), 43-52 (2007). [http://isjaee.hydrogen.ru/pdf/AEE0807/AEE08-07_Potashnikov.pdf] (in Russian)
   * S.I. Potashnikov, A.S. Boyarchenkov, K.A. Nekrasov, A.Ya. Kupryazhkin, Molecular dynamics simulation of mass transport in uranium dioxide using graphics processors. ISJAEE 5(49), 86-93 (2007). [http://isjaee.hydrogen.ru/pdf/AEE0507/ISJAEE05-07_Potashnikov.pdf] (in Russian)
-Молекулярно-динамическое восстановление межчастичных потенциалов в диоксиде урана по тепловому расширению
+
 = See also =
