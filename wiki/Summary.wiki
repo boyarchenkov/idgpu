@@ -23,9 +23,11 @@ The current version has the following capabilities:
 
 = Input and output =
 
-You need to specify parameters of simulation in the source code except the sets of pair potentials.
+You need to specify parameters of simulation in the source code except the sets of pair potentials and some parameters influencing speed of GPU computation.
 
-The progress of simulation is shown in the program window
+The progress of simulation is shown in the title of the window and its single textbox.
+
+Regularly the program save results to a file.
 
 = Articles on our implementation of molecular dynamics on GPU =
 
