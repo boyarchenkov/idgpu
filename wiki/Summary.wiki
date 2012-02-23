@@ -4,10 +4,13 @@
 
 Current version has the following capabilities:
 
-* Molecular dynamics simulation of uranium dioxide
-* Isolated boundary conditions (systems with free surface)
-* Approximation of pair potentials and rigid ions
-* Using GPU for computation of pair forces and energy
+  * Molecular dynamics simulation of uranium dioxide
+
+  * Isolated boundary conditions (systems with free surface)
+
+  * Approximation of pair potentials and rigid ions
+
+  * Using GPU for computation of pair forces and energy
 
 = Requirements =
 
