@@ -1,0 +1,23 @@
+#summary Summary of iD-GPU project.
+
+= Introduction =
+
+Current version has the following capabilities:
+
+* Molecular dynamics simulation of uranium dioxide
+* Isolated boundary conditions (systems with free surface)
+* Approximation of pair potentials and rigid ions
+* Using GPU for computation of pair forces and energy
+
+= Requirements =
+
+* 64-bit version of Microsoft Windows
+* DirectX 11
+* Microsoft .NET Framework 4.0
+* DirectX 11 compatible graphics card (CPU-only computation is also possible)
+
+= Articles on our implementation of molecular dynamics on GPU
+
+= Articles with results obtained using this technology
+
+= See also
