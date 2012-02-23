@@ -2,25 +2,33 @@
 
 = Introduction =
 
-Current version has the following capabilities:
+The current version has the following capabilities:
 
   * Molecular dynamics simulation of uranium dioxide
-
   * Isolated boundary conditions (systems with free surface)
-
   * Approximation of pair potentials and rigid ions
-
   * Using GPU for computation of pair forces and energy
+  * Computation of lattice period and total energy of the system
 
 = Requirements =
 
-* 64-bit version of Microsoft Windows
-* DirectX 11
-* Microsoft .NET Framework 4.0
-* DirectX 11 compatible graphics card (CPU-only computation is also possible)
+== For execution: ==
+  * 64-bit version of Microsoft Windows
+  * Microsoft DirectX 11
+  * Microsoft .NET Framework 4.0
+  * DirectX 11 compatible graphics card (CPU-only computation is also possible)
 
-= Articles on our implementation of molecular dynamics on GPU
+== For compilation: ==
+  * Microsoft Visual C# 2010
 
-= Articles with results obtained using this technology
+= Input and output =
 
-= See also
+You need to specify parameters of simulation in the source code except the sets of pair potentials.
+
+The progress of simulation is shown in the program window
+
+= Articles on our implementation of molecular dynamics on GPU =
+
+= Articles with results obtained using this technology =
+
+= See also =
