@@ -31,6 +31,10 @@ Regularly the program save results to a file.
 
 = Articles on our implementation of molecular dynamics on GPU =
 
+A.S. Boyarchenkov, S.I. Potashnikov, Numerical methods and programming 10, 9 (2009). [http://num-meth.srcc.msu.ru/english/zhurnal/tom_2009/v10r102.html Abstract]
+
+A.S. Boyarchenkov, S.I. Potashnikov, Numerical methods and programming 10, 158 (2009). [http://num-meth.srcc.msu.ru/english/zhurnal/tom_2009/v10r119.html]
+
 = Articles with results obtained using this technology =
 
 = See also =
