@@ -31,8 +31,8 @@
 
 = Статьи по нашей реализации молекулярной динамики на GPU =
 
-  * A.S. Boyarchenkov, S.I. Potashnikov, Numerical methods and programming 10, 9-23 (2009). [http://num-meth.srcc.msu.ru/english/zhurnal/tom_2009/v10r102.html]
-  * A.S. Boyarchenkov, S.I. Potashnikov, Numerical methods and programming 10, 158-175 (2009). [http://num-meth.srcc.msu.ru/english/zhurnal/tom_2009/v10r119.html]
+  * А.С. Боярченков, С.И. Поташников, Использование графических процессоров и технологии CUDA для задач молекулярной динамики.  Вычислительные методы и программирование 10, 9-23 (2009). [http://num-meth.srcc.msu.ru/zhurnal/tom_2009/v10r102.html]
+  * А.С. Боярченков, С.И. Поташников, Вычислительные методы и программирование 10, 158-175 (2009). [http://num-meth.srcc.msu.ru/zhurnal/tom_2009/v10r119.html]
 
 = Статьи по нашим результатам, полученным при помощи этой технологии =
 
