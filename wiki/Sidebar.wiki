@@ -1,0 +1,9 @@
+#sidebar TableOfContents
+
+English:
+
+[Summary]
+
+Русский:
+
+[SummaryRussian Краткое описание]
