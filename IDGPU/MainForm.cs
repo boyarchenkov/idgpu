@@ -30,13 +30,18 @@ namespace IDGPU
 
         private void Run()
         {
+            Utility.SetDecimalSeparator();
             System.Diagnostics.Process.GetCurrentProcess().ProcessorAffinity = new IntPtr(1);
 
-            string[] ions = new[] {"O", "U"}; double[] mass = new double[] { 16, 238 }, charge = new double[] { -2, 4 }; // UO2
-            var pp = PairPotentials.LoadPotentialsFromFile(ions, charge, "Data\\UO2.spp");
+            var unit_cells = UnitCell.LoadUnitCellsFromFile("Data\\UnitCells.uc");
+            var materials = Material.LoadMaterialsFromFile("Data\\Materials.mat");
+            var m = materials["UO2"];
+            var cell = unit_cells[m.UnitCell];
+            var potentials = PairPotentials.LoadPotentialsFromFile(m, "Data\\UO2.spp");
+
             var technique = new ForceDX11_IBC();
             //var technique = new ForceCPU_IBC();
-            MDIBC md = new MDIBC(4, pp["MOX-07"], mass, charge, technique, AppendString);
+            MDIBC md = new MDIBC(Crystal.CreateCube(cell, 4), potentials["MOX-07"], technique, AppendString);
             Clock clock = new Clock();
 
             Paused = false;
