@@ -7,12 +7,19 @@ namespace IDGPU
 {
     public class PairPotentials
     {
-        public static Dictionary<string, PairPotentials> LoadPotentialsFromFile(string[] ion_types, double[] charge, string filename)
+        public static Dictionary<string, PairPotentials> LoadPotentialsFromFile(Material m, string filename)
         {
             var doc = XDocument.Load(filename).Root ?? new XElement("Sets");
-            return doc.Elements("Set").Select(set => new PairPotentials(ion_types, charge, set)).ToDictionary(p => p.Name, p => p);
+            return doc.Elements("Set")
+                .Select(set => new PairPotentials(m, set))
+                .Where(p => p.material_name == m.Formula)
+                .ToDictionary(p => p.Name, p => p);
         }
 
+        public Material Material
+        {
+            get { return m; }
+        }
         public string Name
         {
             get { return name; }
@@ -50,11 +57,12 @@ namespace IDGPU
             }
         }
 
-        public PairPotentials(string[] ion_types, double[] charge, XElement spp)
+        private PairPotentials(Material material, XElement spp)
         {
-            this.ion_types = new string[ion_types.Length]; ion_types.CopyTo(this.ion_types, 0);
-            this.charge = new double[charge.Length]; charge.CopyTo(this.charge, 0);
+            m = material;
+            charge = new double[m.IonCharge.Length]; m.IonCharge.CopyTo(charge, 0);
 
+            material_name = spp.AttributeOrEmpty("material");
             name = spp.AttributeOrEmpty("name");
             form = spp.AttributeOrEmpty("form");
             coefs = new double[12];
@@ -62,10 +70,10 @@ namespace IDGPU
             T_melting = spp.ElementOrDefault("MeltingTemperature").Double();
             T_superionic = spp.ElementOrDefault("SuperionicTemperature").Double();
             var pairs = spp.Elements("Pair").ToDictionary(e => e.AttributeOrEmpty("ions"), e => e);
-            string P00 = ion_types[0] + " " + ion_types[0];
-            string P01 = ion_types[0] + " " + ion_types[1];
-            string P10 = ion_types[1] + " " + ion_types[0];
-            string P11 = ion_types[1] + " " + ion_types[1];
+            string P00 = m.IonName[0] + " " + m.IonName[0];
+            string P01 = m.IonName[0] + " " + m.IonName[1];
+            string P10 = m.IonName[1] + " " + m.IonName[0];
+            string P11 = m.IonName[1] + " " + m.IonName[1];
             XElement x = pairs.ContainsKey(P00) ? pairs[P00] : null;
             if (x != null)
             {
@@ -105,7 +113,7 @@ namespace IDGPU
                 }
             }
             solid_period = new Polynom(spp.ElementOrDefault("SolidPeriod").Value);
-            for (int i = 0; i < this.charge.Length; i++) this.charge[i] *= Ionicity;
+            for (int i = 0; i < charge.Length; i++) charge[i] *= Ionicity;
         }
 
         public double SolidPeriod(double T)
@@ -113,8 +121,8 @@ namespace IDGPU
             return solid_period.Eval(T);
         }
 
-        private string name, form;
-        private string[] ion_types;
+        private Material m;
+        private string name, form, material_name;
         private double[] coefs, charge;
         private double T_melting, T_superionic;
         private Polynom solid_period;

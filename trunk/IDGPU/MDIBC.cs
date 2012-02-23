@@ -4,7 +4,7 @@ using M.Tools;
 
 namespace IDGPU
 {
-    // Molecular dynamics under isolated boundary conditions.
+    // Molecular Dynamics under Isolated Boundary Conditions.
     public class MDIBC
     {
         // http://physics.nist.gov/cuu/Constants/index.html (2006)
@@ -16,7 +16,7 @@ namespace IDGPU
         private static Random rand = new Random(0);
 
         public static double dt = 0.5; // in 1e-14 sec
-        public static double T = 2200; // in K
+        public static double T = 2400; // in K
 
         public int Ions { get { return type.Length; } }
         public int Step { get { return step; } }
@@ -30,66 +30,35 @@ namespace IDGPU
         }
         public IForce Technique { get { return technique; } }
 
-        public MDIBC(int cells, PairPotentials pp, double[] mass, double[] charge, IForce technique, Action<string> output)
+        public MDIBC(Crystal c, PairPotentials pp, IForce technique, Action<string> output)
         {
             Utility.SetDecimalSeparator();
-            this.cells = cells;
+            this.c = c;
             this.pp = pp;
-            this.mass = mass;
-            this.charge = charge;
             this.technique = technique;
             this.outputs = output;
+            this.mass = pp.Material.IonMass;
             Init();
             technique.Init(type, pp, Types, Ions);
         }
 
         private double Maxvel(double mass) { return Math.Sign(rand.NextDouble() - 0.5) * Math.Sqrt(-2 * Math.Log(rand.NextDouble()) * Kb * T / mass); }
 
-        private void InitFluorite()
-        {
-            int i, x, y, z, n = 0, N = 12 * cells * cells * cells;
-            type = new int[N]; pos = new Double3[N]; vel = new Double3[N]; acc = new Double3[N];
-
-            // Unit cell
-            Double3[] cellpos = new[] {
-                new Double3(0, 0, 0),
-                new Double3(0.5, 1, 1),
-                new Double3(1, 0.5, 1),
-                new Double3(0.5, 0.5, 0),
-                new Double3(0.25, 0.25, 0.25),
-                new Double3(0.75, 0.75, 0.25),
-                new Double3(1, 1, 0.5),
-                new Double3(0.5, 0, 0.5),
-                new Double3(0, 0.5, 0.5),
-                new Double3(0.5, 0.5, 0.5),
-                new Double3(0.25, 0.75, 0.75),
-                new Double3(0.75, 0.25, 0.75)
-            };
-            int[] celltype = new int[] { 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1 };
-
-            // Set initial positions and velocities
-            double L0 = Period;
-            for (x = 0; x < cells; x++)
-                for (y = 0; y < cells; y++)
-                    for (z = 0; z < cells; z++)
-                        for (i = 0; i < celltype.Length; i++)
-                        {
-                            type[n] = celltype[i];
-                            pos[n] = L0 * (new Double3(x, y, z) - 0.5 * cells + cellpos[i]);
-                            vel[n] = new Double3(Maxvel(mass[type[n]]), Maxvel(mass[type[n]]), Maxvel(mass[type[n]]));
-                            n++;
-                        }
-        }
         private void Init()
         {
-            InitFluorite();
+            type = c.Type; pos = c.Scale(Period); vel = new Double3[c.Ions]; acc = new Double3[c.Ions];
 
             int i, j, k;
-            for (T_system = 0, i = 0; i < Ions; i++) { T_system += mass[type[i]] * vel[i].LengthSq(); }
+            T_system = 0;
+            for (i = 0; i < Ions; i++)
+            {
+                vel[i] = new Double3(Maxvel(mass[type[i]]), Maxvel(mass[type[i]]), Maxvel(mass[type[i]]));
+                T_system += mass[type[i]] * vel[i].LengthSq();
+            }
             k3N = Kb * 3 * Ions;
             T_system /= k3N;
-            rfr_radius = Period * cells * 0.5; skip_intervals = (int)(rfr_intervals / (cells * 0.5));
-            if (cells == 4) skip_intervals = (9 * skip_intervals) / 10;
+            rfr_radius = Period * c.EdgeCells * 0.5; skip_intervals = (int)(rfr_intervals / (c.EdgeCells * 0.5));
+            if (c.EdgeCells == 4) skip_intervals = (9 * skip_intervals) / 10;
 
             // Sort ions by type (for unrolls)
             int[] indices = new int[Ions];
@@ -167,6 +136,19 @@ namespace IDGPU
             double tau_in_ps = step < relaxation ? 0.1 : 1, tau_in_steps = tau_in_ps / (0.01 * dt);
             for (i = 0; i < Ions; i++) vel[i] *= Math.Sqrt(1 + (T / T_system - 1) / tau_in_steps); // Berendsen, if tau = 1 step then DumbVelScaling
         }
+        private void RevertEvaporatedParticles()
+        {
+            double r2 = 2 * c.EdgeCells * c.EdgeCells * Period * Period; // Some empirical radius of sphere
+            for (int i = 0; i < Ions; i++)
+            {
+                if (pos[i].LengthSq() > r2)
+                {
+                    vel[i].x = -Math.Sign(pos[i].x) * Math.Abs(vel[i].x);
+                    vel[i].y = -Math.Sign(pos[i].y) * Math.Abs(vel[i].y);
+                    vel[i].z = -Math.Sign(pos[i].z) * Math.Abs(vel[i].z);
+                }
+            }
+        }
         private void ComputeDensity()
         {
             int i, j;
@@ -211,32 +193,28 @@ namespace IDGPU
             periods.Enqueue((double)Math.Pow(4 / density[1], 1 / 3.0)); if (periods.Count > output) periods.Dequeue();
             period = 0; foreach (double p in periods) period += p; period /= periods.Count;
             mean_periods.Enqueue(Period); if (mean_periods.Count > autosave) mean_periods.Dequeue();
-            rfr_radius = (double)(Period * cells * 0.5);
+            rfr_radius = (double)(Period * c.EdgeCells * 0.5);
         }
         public void Update()
         {
-            // One MD step: calculate forces, then update vel and correct them and then update pos and compute density
+            // One MD step: compute forces, then update velocities and correct them, then update positions and compute density
             step++;
 
             Force();
 
+            // Integrate velocities
             for (int i = 0; i < Ions; i++)
             {
                 vel[i] += acc[i] * (dt / mass[type[i]]);
                 acc[i] = Double3.Empty;
             }
+
             Correct();
-            double r2 = 2 * cells * cells * Period * Period;
-            for (int i = 0; i < Ions; i++)
-            {
-                pos[i] += vel[i] * dt;
-                if (pos[i].LengthSq() > r2)
-                {
-                    vel[i].x = -Math.Sign(pos[i].x) * Math.Abs(vel[i].x);
-                    vel[i].y = -Math.Sign(pos[i].y) * Math.Abs(vel[i].y);
-                    vel[i].z = -Math.Sign(pos[i].z) * Math.Abs(vel[i].z);
-                }
-            }
+
+            // Integrate positions
+            for (int i = 0; i < Ions; i++) pos[i] += vel[i] * dt;
+
+            RevertEvaporatedParticles();
             ComputeDensity();
 
             if (autosave > 0 && step % autosave == 0) SaveResults();
@@ -248,20 +226,24 @@ namespace IDGPU
 
         private Action<string> outputs;
         private IForce technique;
-        private int step, cells;
+        private PairPotentials pp;
+        private Crystal c;
+
+        // Current state
+        private int step;
         private double T_mean, T_system, period, i_period, energy, rfr_radius, k3N;
         private FixedQueue<double> periods, mean_periods, temperatures, mean_temperatures, energies;
-        private FixedQueue<double> i_periods, i_mean_periods;
-        private PairPotentials pp;
-
+        private FixedQueue<double> i_periods, i_mean_periods; // Bulk (internal) lattice period
         public int[] type;
-        public double[] mass, charge;
+        public double[] mass;
         public Double3[] pos, vel, acc;
 
-        // parameters
-        public static int autosave = 5000; // 500 ps
+        // Parameters of simulation
         private int relaxation = 1000; // 4000; 20 ps
-        private int output = 200; // 1 ps
         private int rfr_intervals = 1000, skip_intervals; // for density computation
+
+        // Parameters of output
+        private int output = 200; // 1 ps
+        public static int autosave = 5000; // 500 ps
     }
 }

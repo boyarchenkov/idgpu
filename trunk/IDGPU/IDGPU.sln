@@ -2,6 +2,9 @@
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IDGPU", "IDGPU.csproj", "{588EA76F-20B7-4C4F-B3F3-F3E8AE464974}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C0A68377-9C9B-4428-B0F9-E3F2190742AC} = {C0A68377-9C9B-4428-B0F9-E3F2190742AC}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DX11One", "..\DX11One\DX11One.vcxproj", "{C0A68377-9C9B-4428-B0F9-E3F2190742AC}"
 EndProject
@@ -32,12 +35,10 @@ Global
 		{C0A68377-9C9B-4428-B0F9-E3F2190742AC}.Debug|Win32.ActiveCfg = Debug|Win32
 		{C0A68377-9C9B-4428-B0F9-E3F2190742AC}.Debug|Win32.Build.0 = Debug|Win32
 		{C0A68377-9C9B-4428-B0F9-E3F2190742AC}.Debug|x64.ActiveCfg = Debug|x64
-		{C0A68377-9C9B-4428-B0F9-E3F2190742AC}.Debug|x64.Build.0 = Debug|x64
 		{C0A68377-9C9B-4428-B0F9-E3F2190742AC}.Debug|x86.ActiveCfg = Debug|x64
 		{C0A68377-9C9B-4428-B0F9-E3F2190742AC}.Release|Win32.ActiveCfg = Release|Win32
 		{C0A68377-9C9B-4428-B0F9-E3F2190742AC}.Release|Win32.Build.0 = Release|Win32
 		{C0A68377-9C9B-4428-B0F9-E3F2190742AC}.Release|x64.ActiveCfg = Release|x64
-		{C0A68377-9C9B-4428-B0F9-E3F2190742AC}.Release|x64.Build.0 = Release|x64
 		{C0A68377-9C9B-4428-B0F9-E3F2190742AC}.Release|x86.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution

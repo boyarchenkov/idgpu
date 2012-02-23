@@ -86,6 +86,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Crystal.cs" />
     <Compile Include="DirectCompute.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="ForceCPU_IBC.cs" />
@@ -103,11 +104,13 @@
     <Compile Include="M.Tools\Float3.cs" />
     <Compile Include="M.Tools\Float4.cs" />
     <Compile Include="M.Tools\FixedQueue.cs" />
+    <Compile Include="Material.cs" />
     <Compile Include="MDIBC.cs" />
     <Compile Include="PairPotentials.cs" />
     <Compile Include="Polynom.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UnitCell.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -117,7 +120,7 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <None Include="Data\Materials.m">
+    <None Include="Data\Materials.mat">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Data\Radeon6970.nw">
@@ -146,7 +149,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Data\Structures.s">
+    <None Include="Data\UnitCells.uc">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="DX11One.dll">
