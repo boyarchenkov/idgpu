@@ -15,7 +15,7 @@ namespace IDGPU
         public const double Kb = 8.617342791E-5; // eV / K
         private static Random rand = new Random(0);
 
-        public static double dt = 0.5; // in e-14 sec
+        public static double dt = 0.5; // in 1e-14 sec
         public static double T = 2200; // in K
 
         public int Ions { get { return type.Length; } }
