@@ -123,6 +123,9 @@
     <None Include="Data\Materials.mat">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Data\PuO2.spp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Data\Radeon6970.nw">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
+using System.Xml.Linq;
 using M.Tools;
 
 namespace IDGPU
@@ -30,37 +32,34 @@ namespace IDGPU
         }
         public IForce Technique { get { return technique; } }
 
-        public MDIBC(Crystal c, PairPotentials pp, IForce technique, Action<string> output)
+        public MDIBC(Crystal c, PairPotentials pp, IForce technique, Action<string> append_text)
         {
             Utility.SetDecimalSeparator();
             this.c = c;
             this.pp = pp;
             this.technique = technique;
-            this.outputs = output;
+            this.append_text = append_text;
             this.mass = pp.Material.IonMass;
+
+            type = c.Type; pos = c.Scale(Period); vel = new Double3[c.Ions]; acc = new Double3[c.Ions];
+            for (int i = 0; i < Ions; i++)
+                vel[i] = new Double3(Maxvel(mass[type[i]]), Maxvel(mass[type[i]]), Maxvel(mass[type[i]]));
+
             Init();
-            technique.Init(type, pp, Types, Ions);
         }
 
         private double Maxvel(double mass) { return Math.Sign(rand.NextDouble() - 0.5) * Math.Sqrt(-2 * Math.Log(rand.NextDouble()) * Kb * T / mass); }
 
         private void Init()
         {
-            type = c.Type; pos = c.Scale(Period); vel = new Double3[c.Ions]; acc = new Double3[c.Ions];
-
-            int i, j, k;
-            T_system = 0;
-            for (i = 0; i < Ions; i++)
-            {
-                vel[i] = new Double3(Maxvel(mass[type[i]]), Maxvel(mass[type[i]]), Maxvel(mass[type[i]]));
-                T_system += mass[type[i]] * vel[i].LengthSq();
-            }
             k3N = Kb * 3 * Ions;
-            T_system /= k3N;
+            T_system = Temperature();
+
             rfr_radius = Period * c.EdgeCells * 0.5; skip_intervals = (int)(rfr_intervals / (c.EdgeCells * 0.5));
             if (c.EdgeCells == 4) skip_intervals = (9 * skip_intervals) / 10;
 
             // Sort ions by type (for unrolls)
+            int i, j, k;
             int[] indices = new int[Ions];
             for (k = i = 0; i < Types; i++)
                 for (j = 0; j < Ions; j++)
@@ -77,18 +76,64 @@ namespace IDGPU
             i_periods = new FixedQueue<double>(); i_mean_periods = new FixedQueue<double>();
             temperatures = new FixedQueue<double>(); mean_temperatures = new FixedQueue<double>();
             energies = new FixedQueue<double>();
+
+            technique.Init(type, pp, Types, Ions);
         }
 
-        public void SaveResults()
+        public void Load(string filename)
         {
-            string directory = "results " + Program.started.ToString("yyyy-MM-dd");
-            if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);
-            string filename = String.Format(directory + "\\{0}-{1}-{2:F0}", pp.Name, Ions, T);
+            var root = XDocument.Load(filename).Root;
+            var m = MainForm.materials[root.Attribute("material").Value];
+            pp = PairPotentials.LoadPotentialsFromFile(m, MainForm.potentials_filename)[root.Attribute("potentials").Value];
+            c = Crystal.CreateCube(MainForm.unit_cells[m.UnitCell], root.Int("edge-cells"));
+            T = root.Double("T");
+            dt = root.Double("timestep");
+            autosave = root.Int("autosave-step");
+            step = root.Element("Ions").Int("step");
+            var ions = root.Element("Ions").Elements().ToArray();
+            type = new int[ions.Length];
+            pos = new Double3[ions.Length];
+            vel = new Double3[ions.Length];
+            acc = new Double3[ions.Length];
+            for (int i = 0; i < ions.Length; i++)
+            {
+                type[i] = ions[i].Int("type");
+                var d = ions[i].Attribute("pos").Value.ToDoubleArray();
+                pos[i] = new Double3(d[0], d[1], d[2]);
+                d = ions[i].Attribute("vel").Value.ToDoubleArray();
+                vel[i] = new Double3(d[0], d[1], d[2]);
+            }
+            Init();
+        }
+        public void Save(string filename)
+        {
+            var ions = new XElement("Ions", new XAttribute("step", step));
+            for (int i = 0; i < Ions; i++)
+                ions.Add(new XElement("Ion",
+                            new XAttribute("type", type[i]),
+                            new XAttribute("pos", pos[i].ToString("F9")),
+                            new XAttribute("vel", vel[i].ToString("F9"))));
+
+            new XDocument(
+                    new XElement("Simulation",
+                        new XAttribute("material", pp.Material.Formula),
+                        new XAttribute("potentials", pp.Name),
+                        new XAttribute("edge-cells", c.EdgeCells),
+                        new XAttribute("T", T),
+                        new XAttribute("timestep", dt),
+                        new XAttribute("autosave-step", autosave),
+                        ions
+                    )
+                ).Save(filename);
+        }
+        public void SaveResults(string path)
+        {
+            string filename = path + ".txt";
             if (File.Exists(filename)) File.Copy(filename, filename + ".bak", true);
             using (var w = new StreamWriter(filename, true))
                 for (int i = output; i <= mean_periods.Count; i += output)
                 {
-                    double time = (step - mean_periods.Count + i) * dt / 100.0; // Save time in picoseconds instead of just step
+                    double time = (step - mean_periods.Count + i) * dt / 100.0; // Save time in picoseconds instead of just steps
                     w.Write("{0:F1}\t{1:F1}\t{2:F4}\t{3:F4}\t{4:F2}\t", time, mean_temperatures[i - 1], mean_periods[i - 1], i_mean_periods[i - 1], energies[i / output - 1]);
                     w.WriteLine();
                 }
@@ -106,6 +151,12 @@ namespace IDGPU
                 technique.Force();
             }
         }
+        private double Temperature()
+        {
+            double mvv = 0;
+            for (int i = 0; i < Ions; i++) mvv += mass[type[i]] * vel[i].LengthSq();
+            return mvv / k3N;
+        }
         private void Correct()
         {
             int i;
@@ -114,7 +165,7 @@ namespace IDGPU
             for (T_system = 0, i = 0; i < Ions; i++)
             {
                 double mi = mass[type[i]];
-                impulse += mi * vel[i]; T_system += mi * vel[i].LengthSq();
+                impulse += mi * vel[i];
                 inertia[0].x += mi * (pos[i].y * pos[i].y + pos[i].z * pos[i].z); inertia[0].y -= mi * pos[i].x * pos[i].y;
                 inertia[1].y += mi * (pos[i].x * pos[i].x + pos[i].z * pos[i].z); inertia[1].z -= mi * pos[i].y * pos[i].z;
                 inertia[2].z += mi * (pos[i].x * pos[i].x + pos[i].y * pos[i].y); inertia[2].x -= mi * pos[i].x * pos[i].z;
@@ -129,7 +180,7 @@ namespace IDGPU
             for (i = 0; i < Ions; i++) vel[i] -= Double3.Cross(wel, pos[i]); // Correct moment
 
             // Stack temperatures for averaging and saving
-            T_system /= k3N; temperatures.Enqueue(T_system); if (temperatures.Count > output) temperatures.Dequeue();
+            T_system = Temperature(); temperatures.Enqueue(T_system); if (temperatures.Count > output) temperatures.Dequeue();
             T_mean = 0; foreach (double t in temperatures) T_mean += t; T_mean /= temperatures.Count;
             mean_temperatures.Enqueue(T_mean); if (mean_temperatures.Count > autosave) mean_temperatures.Dequeue();
 
@@ -138,7 +189,7 @@ namespace IDGPU
         }
         private void RevertEvaporatedParticles()
         {
-            double r2 = 2 * c.EdgeCells * c.EdgeCells * Period * Period; // Some empirical radius of sphere
+            double r2 = 2 * c.EdgeCells * c.EdgeCells * Period * Period; // Some empirical radius of bounding sphere
             for (int i = 0; i < Ions; i++)
             {
                 if (pos[i].LengthSq() > r2)
@@ -202,29 +253,33 @@ namespace IDGPU
 
             Force();
 
-            // Integrate velocities
+            // Integration and corrections
             for (int i = 0; i < Ions; i++)
             {
                 vel[i] += acc[i] * (dt / mass[type[i]]);
                 acc[i] = Double3.Empty;
             }
-
             Correct();
-
-            // Integrate positions
             for (int i = 0; i < Ions; i++) pos[i] += vel[i] * dt;
 
+            // Analysis
             RevertEvaporatedParticles();
             ComputeDensity();
 
-            if (autosave > 0 && step % autosave == 0) SaveResults();
-
-            // Make output
+            // Output to screen and files
+            if (autosave > 0 && step % autosave == 0)
+            {
+                string path = "results " + Program.started.ToString("yyyy-MM-dd");
+                if (!Directory.Exists(path)) Directory.CreateDirectory(path);
+                path += String.Format("\\{0}-{1}-{2:F0}", pp.Name, Ions, T);
+                SaveResults(path);
+                Save(String.Format("{0} {1}.sim", path, step));
+            }
             if (step % MainForm.text_output_interval == 0)
-                outputs(String.Format("\r\n{0}\t{1:F0}\t{2:F0}\t{3:F4}\t{4:F4}\t{5:F3}", step, T_system, T_mean, period, i_period, energy));
+                append_text(String.Format("\r\n{0}\t{1:F0}\t{2:F0}\t{3:F4}\t{4:F4}\t{5:F3}", step, T_system, T_mean, period, i_period, energy));
         }
 
-        private Action<string> outputs;
+        private Action<string> append_text;
         private IForce technique;
         private PairPotentials pp;
         private Crystal c;
@@ -239,11 +294,11 @@ namespace IDGPU
         public Double3[] pos, vel, acc;
 
         // Parameters of simulation
-        private int relaxation = 1000; // 4000; 20 ps
+        private int relaxation = 1000; // 5 ps
         private int rfr_intervals = 1000, skip_intervals; // for density computation
 
         // Parameters of output
         private int output = 200; // 1 ps
-        public static int autosave = 5000; // 500 ps
+        public static int autosave = 5000; // 25 ps
     }
 }

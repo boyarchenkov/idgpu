@@ -1,0 +1,33 @@
+<Sets>
+	<Set material="PuO2" name="Yamada-00" author="Yamada" year="2000" form="BuckinghamMorse">
+		<Ionicity>0.6</Ionicity>
+		<Pair ions="O O" BornMayer="2345.90 3.12500" Dispersion="4.14572" />
+		<Pair ions="Pu O" BornMayer="5329.83 4.16667" Morse="0.564005 1.560 2.339" />
+		<Pair ions="Pu Pu" BornMayer="32606.8 6.25000" />
+
+		<MeltingTemperature>4330</MeltingTemperature>
+		<SuperionicTemperature>500</SuperionicTemperature>
+		<SolidPeriod MinT="0" MaxT="4480">1.16624364E-12 -2.47922184E-09 6.66108108E-05 5.39522488</SolidPeriod>
+
+	</Set>
+	<Set material="PuO2" name="Arima-05" author="Arima" year="2005" form="Buckingham">
+		<Ionicity>0.675</Ionicity>
+		<Pair ions="O O" BornMayer="978.718 3.01205" Dispersion="17.3544" />
+		<Pair ions="Pu O" BornMayer="57425.2 5.03778" />
+		<Pair ions="Pu Pu" BornMayer="2.80460e+14 15.3846" />
+
+		<MeltingTemperature>4520</MeltingTemperature>
+		<SuperionicTemperature>3650</SuperionicTemperature>
+		<SolidPeriod MinT="0" MaxT="4680">2.05950475E-12 6.38812728E-10 5.17759856E-05 5.37984902</SolidPeriod>
+	</Set>
+	<Set material="PuO2" name="MOX-07" author="Potashnikov" year="2007" form="Buckingham">
+		<Ionicity>0.6862303</Ionicity>
+		<Pair ions="O O" BornMayer="50211.74 5.520015" Dispersion="74.79611" />
+		<Pair ions="Pu O" BornMayer="871.7899 2.807875" />
+		<Pair ions="Pu Pu" />
+
+		<MeltingTemperature>4090</MeltingTemperature>
+		<SuperionicTemperature>2600</SuperionicTemperature>
+		<SolidPeriod MinT="0" MaxT="4250">8.22179410E-09 5.46845199E-05 5.37619492</SolidPeriod>
+	</Set>
+</Sets>
