@@ -8,8 +8,10 @@ namespace IDGPU
         public static DateTime started = DateTime.Now;
 
         [STAThread]
-        public static void Main()
+        public static void Main(string[] args)
         {
+            if (args.Length >= 1) MainForm.config_filename = args[0];
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new MainForm());

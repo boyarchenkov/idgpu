@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using M.Tools;
@@ -10,7 +11,8 @@ namespace IDGPU
     {
         public static Dictionary<string, UnitCell> LoadUnitCellsFromFile(string filename)
         {
-            var doc = XDocument.Load(filename).Root ?? new XElement("Cells");
+            if (!File.Exists(filename)) throw new FileNotFoundException(filename);
+            var doc = XDocument.Load(filename).Root;
             return doc.Elements("Cell").Select(cell => new UnitCell(cell)).ToDictionary(c => c.Name, c => c);
         }
 

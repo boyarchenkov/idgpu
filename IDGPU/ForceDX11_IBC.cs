@@ -9,18 +9,28 @@ namespace IDGPU
 {
     public class ForceDX11_IBC : IForce, IDisposable
     {
+        public static string parameters_filename;
+        public static string ParametersFilename
+        {
+            get { return parameters_filename; }
+            set
+            {
+                parameters_filename = value;
+                if (File.Exists(value))
+                {
+                    var lines = File.ReadAllLines(value);
+                    var numbers =
+                        lines.Select(
+                            line =>
+                            line.Split(new[] { ' ' }, 4, StringSplitOptions.RemoveEmptyEntries).Take(3).Select(word => int.Parse(word)));
+                    texture_size = new SortedDictionary<int, int[]>(numbers.ToDictionary(ii => ii.First(), ii => ii.Skip(1).ToArray()));
+                }
+            }
+        }
+
         static ForceDX11_IBC()
         {
-            string filename = "Data\\Radeon6970.nw";
-            if (File.Exists(filename))
-            {
-                var lines = File.ReadAllLines(filename);
-                var numbers =
-                    lines.Select(
-                        line =>
-                        line.Split(new[] { ' ' }, 4, StringSplitOptions.RemoveEmptyEntries).Take(3).Select(word => int.Parse(word)));
-                texture_size = new SortedDictionary<int, int[]>(numbers.ToDictionary(ii => ii.First(), ii => ii.Skip(1).ToArray()));
-            }
+            ParametersFilename = "Data\\Radeon6970.nwh";
         }
         private static SortedDictionary<int, int[]> texture_size;
         private static void SetTiling(int ions, out int width, out int height, out int threads, out int bj)

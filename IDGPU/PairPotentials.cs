@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 
@@ -9,7 +10,8 @@ namespace IDGPU
     {
         public static Dictionary<string, PairPotentials> LoadPotentialsFromFile(Material m, string filename)
         {
-            var doc = XDocument.Load(filename).Root ?? new XElement("Sets");
+            if (!File.Exists(filename)) throw new FileNotFoundException(filename);
+            var doc = XDocument.Load(filename).Root;
             return doc.Elements("Set")
                 .Select(set => new PairPotentials(m, set))
                 .Where(p => p.material_name == m.Formula)

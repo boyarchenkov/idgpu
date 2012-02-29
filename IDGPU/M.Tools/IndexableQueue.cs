@@ -4,7 +4,7 @@ using System.Text;
 
 namespace M.Tools
 {
-    public class FixedQueue<T> : IEnumerable<T>
+    public class IndexableQueue<T> : IEnumerable<T>
     {
         public int Count
         {
@@ -29,7 +29,7 @@ namespace M.Tools
             }
         }
 
-        public FixedQueue()
+        public IndexableQueue()
         {
             q = new Queue<T>();
             buffer = null;

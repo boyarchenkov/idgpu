@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 
@@ -9,7 +10,8 @@ namespace IDGPU
     {
         public static Dictionary<string, Material> LoadMaterialsFromFile(string filename)
         {
-            var doc = XDocument.Load(filename).Root ?? new XElement("Materials");
+            if (!File.Exists(filename)) throw new FileNotFoundException(filename);
+            var doc = XDocument.Load(filename).Root;
             return doc.Elements("Material").Select(material => new Material(material)).ToDictionary(m => m.Formula, m => m);
         }
 
