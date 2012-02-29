@@ -32,9 +32,16 @@ namespace IDGPU
         }
         public IForce Technique { get { return technique; } }
 
-        public MDIBC(Crystal c, PairPotentials pp, IForce technique, Action<string> append_text)
+        public MDIBC(Configuration cfg, Crystal c, PairPotentials pp, IForce technique, Action<string> append_text)
         {
-            Utility.SetDecimalSeparator();
+            dt = cfg.Get_dt_in_fs() / 10.0;
+            T = cfg.GetTemperatureInKelvins("T");
+            rfr_intervals = cfg["rfr-intervals"].ToInt();
+            output = cfg.GetTimeInSteps("output");
+            energy_interval = cfg.GetTimeInSteps("energy-interval");
+            relaxation = cfg.GetTimeInSteps("relaxation");
+            autosave = cfg.GetTimeInSteps("autosave");
+
             this.c = c;
             this.pp = pp;
             this.technique = technique;
@@ -72,10 +79,10 @@ namespace IDGPU
                 Utility.Swap(ref vel[i], ref vel[j]);
             }
 
-            periods = new FixedQueue<double>(); mean_periods = new FixedQueue<double>();
-            i_periods = new FixedQueue<double>(); i_mean_periods = new FixedQueue<double>();
-            temperatures = new FixedQueue<double>(); mean_temperatures = new FixedQueue<double>();
-            energies = new FixedQueue<double>();
+            periods = new IndexableQueue<double>(); mean_periods = new IndexableQueue<double>();
+            i_periods = new IndexableQueue<double>(); i_mean_periods = new IndexableQueue<double>();
+            temperatures = new IndexableQueue<double>(); mean_temperatures = new IndexableQueue<double>();
+            energies = new IndexableQueue<double>();
 
             technique.Init(type, pp, Types, Ions);
         }
@@ -134,14 +141,16 @@ namespace IDGPU
                 for (int i = output; i <= mean_periods.Count; i += output)
                 {
                     double time = (step - mean_periods.Count + i) * dt / 100.0; // Save time in picoseconds instead of just steps
-                    w.Write("{0:F1}\t{1:F1}\t{2:F4}\t{3:F4}\t{4:F2}\t", time, mean_temperatures[i - 1], mean_periods[i - 1], i_mean_periods[i - 1], energies[i / output - 1]);
+                    int j = Math.Max(1, i / energy_interval);
+                    w.Write("{0:F1}\t{1:F1}\t{2:F4}\t{3:F4}\t{4:F2}\t",
+                        time, mean_temperatures[i - 1], mean_periods[i - 1], i_mean_periods[i - 1], energies[j - 1]);
                     w.WriteLine();
                 }
         }
         private void Force()
         {
             technique.SetPositions(pos, acc);
-            if (step % output == 0)
+            if (step % energy_interval == 0)
             {
                 energy = technique.Energy() + k3N * T_system / 2;
                 energies.Enqueue(energy); if (energies.Count > autosave / output) energies.Dequeue();
@@ -287,8 +296,8 @@ namespace IDGPU
         // Current state
         private int step;
         private double T_mean, T_system, period, i_period, energy, rfr_radius, k3N;
-        private FixedQueue<double> periods, mean_periods, temperatures, mean_temperatures, energies;
-        private FixedQueue<double> i_periods, i_mean_periods; // Bulk (internal) lattice period
+        private IndexableQueue<double> periods, mean_periods, temperatures, mean_temperatures, energies;
+        private IndexableQueue<double> i_periods, i_mean_periods; // Bulk (internal) lattice period
         public int[] type;
         public double[] mass;
         public Double3[] pos, vel, acc;
@@ -299,6 +308,7 @@ namespace IDGPU
 
         // Parameters of output
         private int output = 200; // 1 ps
+        private int energy_interval = 200; // 1 ps
         public static int autosave = 5000; // 25 ps
     }
 }

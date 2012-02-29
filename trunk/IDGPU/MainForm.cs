@@ -8,12 +8,13 @@ namespace IDGPU
 {
     public partial class MainForm : Form
     {
-        public static int text_output_interval = 100;
-        public static string materials_filename = "Data\\Materials.mat";
+        public static string config_filename = "IDGPU.cfg";
         public static string cells_filename = "Data\\UnitCells.uc";
+        public static string materials_filename = "Data\\Materials.mat";
         public static string potentials_filename = "Data\\UO2.spp";
-        public static Dictionary<string, UnitCell> unit_cells = UnitCell.LoadUnitCellsFromFile(cells_filename);
-        public static Dictionary<string, Material> materials = Material.LoadMaterialsFromFile(materials_filename);
+        public static Dictionary<string, UnitCell> unit_cells;
+        public static Dictionary<string, Material> materials;
+        public static int text_output_interval = 100;
 
         public bool Paused
         {
@@ -38,34 +39,56 @@ namespace IDGPU
         {
             Utility.SetDecimalSeparator();
 
-            var m = materials["UO2"];
-            var cell = unit_cells[m.UnitCell];
-            var potentials = PairPotentials.LoadPotentialsFromFile(m, potentials_filename);
-
-            var technique = new ForceDX11_IBC();
-            //var technique = new ForceCPU_IBC();
-            MDIBC md = new MDIBC(Crystal.CreateCube(cell, 4), potentials["MOX-07"], technique, AppendText);
-            Clock clock = new Clock();
-
-            Paused = false;
-            float besttime = 1000, mean_time = 0;
-            while (true)
+            foreach (var c in Configuration.LoadConfigurationsFromFile(config_filename))
             {
-                while (Paused) Thread.Sleep(10);
+                cells_filename = c["cells-filename"];
+                unit_cells = UnitCell.LoadUnitCellsFromFile(cells_filename);
+                materials_filename = c["materials-filename"];
+                materials = Material.LoadMaterialsFromFile(materials_filename);
+                potentials_filename = c["potentials-filename"];
+                var m = materials[c["material"]];
+                ForceDX11_IBC.ParametersFilename = c["dx11-parameters-filename"];
+                text_output_interval = c["text-output-interval"].ToInt();
 
-                float time = clock.ElapsedTime;
-                md.Update();
-                time = clock.ElapsedTime - time;
-                mean_time += time; besttime = Math.Min(time, besttime);
+                var cell = unit_cells[m.UnitCell];
+                var potentials = PairPotentials.LoadPotentialsFromFile(m, potentials_filename);
 
-                if (md.Step % text_output_interval == 0)
+                var techniques = new Dictionary<string, IForce>();
+                IForce technique = new ForceDX11_IBC();
+                techniques.Add(technique.Name, technique);
+                technique = new ForceCPU_IBC();
+                techniques.Add(technique.Name, technique);
+                technique = techniques[c["technique"]];
+
+                int finish_steps = c.GetTimeInSteps("finish-at");
+                MDIBC md = new MDIBC(c, Crystal.CreateCube(cell, c["edge-cells"].ToInt()), potentials[c["potentials"]], technique, AppendText);
+                Clock clock = new Clock();
+
+                Paused = false;
+                float besttime = 1000, mean_time = 0;
+                while (finish_steps == 0 || md.Step < finish_steps)
                 {
-                    mean_time /= text_output_interval;
-                    SetTitle(String.Format("{0} T={1} N={2} dt={3:F3} {4} {5}",
-                        md.Step, MDIBC.T, md.Ions, MDIBC.dt, md.Technique.Name, besttime));
-                    mean_time = 0;
+                    while (Paused) Thread.Sleep(10);
+
+                    float time = clock.ElapsedTime;
+                    md.Update();
+                    time = clock.ElapsedTime - time;
+                    mean_time += time;
+                    besttime = Math.Min(time, besttime);
+
+                    if (md.Step % text_output_interval == 0)
+                    {
+                        mean_time /= text_output_interval;
+                        SetTitle(String.Format("{0} T={1} N={2} dt={3:F3} {4} {5}",
+                                               md.Step, MDIBC.T, md.Ions, MDIBC.dt, md.Technique.Name, besttime));
+                        mean_time = 0;
+                    }
                 }
+
+                technique.Dispose();
             }
+            Invoke(new Action(Close));
+            Application.Exit();
         }
         private void SetTitle(string s)
         {

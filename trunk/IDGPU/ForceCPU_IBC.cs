@@ -6,7 +6,7 @@ namespace IDGPU
     public class ForceCPU_IBC : IForce, IDisposable
     {
         public static readonly double cutoff = 10;
-        public string Name { get { return "CPU C#"; } }
+        public string Name { get { return "CPU C# IBC"; } }
 
         public void Dispose() { ions = types = 0; type = null; coefs2D = null; }
         public void SetPositions(Double3[] pos, Double3[] acc) { this.pos = pos; this.acc = acc; }
