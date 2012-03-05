@@ -19,6 +19,7 @@ namespace IDGPU
         private UnitCell(XElement cell)
         {
             name = cell.AttributeOrEmpty("name");
+            ions_in_molecule = cell.Int("ions-in-molecule");
             var ions = cell.Elements("Ion").ToArray();
             pos = new Double3[ions.Length];
             type = new int[ions.Length];
@@ -40,6 +41,10 @@ namespace IDGPU
         {
             get { return pos.Length; }
         }
+        public int IonsInMolecule
+        {
+            get { return ions_in_molecule; }
+        }
         public int Types
         {
             get { return types; }
@@ -54,7 +59,7 @@ namespace IDGPU
         }
 
         private string name;
-        private int types;
+        private int types, ions_in_molecule;
         private Double3[] pos;
         private int[] type;
     }

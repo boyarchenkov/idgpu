@@ -55,9 +55,11 @@ namespace IDGPU
 
                 var cell = unit_cells[m.UnitCell];
                 potentials = PairPotentials.LoadPotentialsFromFile(m, potentials_filename);
-                var crystal = Crystal.CreateCube(cell, c["edge-cells"].ToInt());
+                var crystal = Crystal.Create(cell, c.Get("crystal"));
 
-                if (c.ContainsKey("optimize-tiling")) ForceDX11_IBC.OptimizeTiling(c["optimize-tiling"].ToDouble(), crystal, AppendText);
+                double optimize = c["optimize-tiling"].ToDouble();
+                if (optimize > 0) ForceDX11_IBC.OptimizeTiling(optimize, crystal, AppendText);
+
                 var techniques = new Dictionary<string, IForce>();
                 IForce technique = new ForceDX11_IBC();
                 techniques.Add(technique.Name, technique);
@@ -113,9 +115,19 @@ namespace IDGPU
             }
             textBoxOut.AppendText(s);
         }
+        private void copyToClipboard(string s)
+        {
+            if (InvokeRequired)
+            {
+                Invoke(new Action<string>(copyToClipboard), s);
+                return;
+            }
+            Clipboard.SetText(s);
+        }
         private void MainFormClosed(object sender, FormClosedEventArgs e)
         {
             t.Abort();
+            t = null;
         }
         private void buttonPause_Click(object sender, EventArgs e)
         {
@@ -125,16 +137,6 @@ namespace IDGPU
         private void textBoxOut_DoubleClick(object sender, EventArgs e)
         {
             Clipboard.SetText(textBoxOut.Text);
-        }
-
-        private void copyToClipboard(string s)
-        {
-            if (InvokeRequired)
-            {
-                Invoke(new Action<string>(copyToClipboard), s);
-                return;
-            }
-            Clipboard.SetText(s);
         }
 
         private Thread t;
