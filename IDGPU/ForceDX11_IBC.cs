@@ -27,6 +27,67 @@ namespace IDGPU
                 }
             }
         }
+        public static void OptimizeTiling(double timeout, Crystal c, Action<string> append_text)
+        {
+            float min_time = float.MaxValue;
+            int min_iterations = 3, w = -1, h = -1, min_w = -1, min_h = -1, ions = c.Ions;
+            Double3[] pos = c.Scale(5.5), acc = new Double3[ions];
+            var wh = new int[2];
+            var technique = new ForceDX11_IBC();
+
+            string filename = "tiling " + ions + ".wht", s;
+            if (File.Exists(filename)) File.Delete(filename);
+            File.AppendAllText(filename, "width\theight\ttime\titerations\tFictitious particles\r\n");
+
+            for (w = 4; w <= 256; w += 4)
+            {
+                h = (int)Math.Ceiling((double)ions / w);
+                if (h > 4096) continue;
+                wh[0] = w;
+                wh[1] = h;
+                texture_size[ions] = wh;
+                int total_ions = technique.Init(c.Type, MainForm.potentials.First().Value, 2, ions);
+                technique.SetPositions(pos, acc);
+
+                // Test the next set of parameters
+                int i;
+                var times = new List<float>();
+                var clock = new Clock();
+                float started = clock.ElapsedTime, min_time_w = float.MaxValue;
+                for (i = 0; i < min_iterations || clock.ElapsedTime - started < timeout; i++)
+                {
+                    float time = clock.ElapsedTime;
+                    technique.Force();
+                    times.Add(clock.ElapsedTime - time);
+                    min_time_w = Math.Min(min_time_w, clock.ElapsedTime - time);
+                }
+                // Compare results
+                if (min_time_w < min_time)
+                {
+                    min_w = w;
+                    min_h = h;
+                    min_time = min_time_w;
+                }
+
+                // Write results
+                times.Sort();
+                float median = times[times.Count / 2];
+                s = String.Format("{0}\t{1}\t{2:F6}\t{3:F6}\t{4}\t{5}\r\n", w, h, min_time_w, median, i, total_ions - ions);
+                append_text(s);
+                File.AppendAllText(filename, s);
+
+                technique.Dispose();
+            }
+            // Save optimal parameters
+            wh[0] = w = min_w;
+            wh[1] = h = min_h;
+            texture_size[ions] = wh;
+            s = String.Format("{0} {1} {2} // {3:F6}\r\n", ions, w, h, min_time);
+            append_text(s);
+            filename = Path.ChangeExtension(filename, "nwh");
+            if (File.Exists(filename)) File.Delete(filename);
+            File.WriteAllText(filename, s);
+        }
 
         static ForceDX11_IBC()
         {
@@ -50,6 +111,7 @@ namespace IDGPU
 
         public void Dispose()
         {
+            ions = texels = bi = bj = cycles = threads = -1;
             if (!initialized) return; initialized = false;
             pos_gpu.Release();
             type_gpu.Release();
@@ -62,14 +124,14 @@ namespace IDGPU
         public void SetPositions(Double3[] pos, Double3[] acc) { this.pos = pos; this.acc = acc; }
         public unsafe int Init(int[] type, PairPotentials pp, int types, int ions_ext)
         {
+            Dispose();
+            device = KernelRepository.Device;
+
             this.ions = ions_ext;
             SetTiling(ions, out ww, out hh, out threads, out bj);
             this.texels = ww * hh;
             bi = (int)Math.Ceiling((double)texels / (threads * 4));
             cycles = (int)Math.Ceiling((double)hh / bj);
-
-            Dispose();
-            device = KernelRepository.Device;
 
             string definitions = String.Format("#define n {0}{3}#define threads {1}{3}#define types {2}{3}", texels, threads, types, Environment.NewLine);
             string shader_filename = null;

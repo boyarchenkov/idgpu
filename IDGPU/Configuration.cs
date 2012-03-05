@@ -109,6 +109,10 @@ namespace IDGPU
             }
             return T;
         }
+        public bool ContainsKey(string key)
+        {
+            return parameters.ContainsKey(key);
+        }
 
         private Configuration()
         {

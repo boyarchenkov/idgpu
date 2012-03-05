@@ -14,7 +14,9 @@ namespace IDGPU
         public static string potentials_filename = "Data\\UO2.spp";
         public static Dictionary<string, UnitCell> unit_cells;
         public static Dictionary<string, Material> materials;
+        public static Dictionary<string, PairPotentials> potentials;
         public static int text_output_interval = 100;
+        public static Action<string> CopyToClipboard;
 
         public bool Paused
         {
@@ -31,6 +33,7 @@ namespace IDGPU
         {
             InitializeComponent();
 
+            CopyToClipboard = copyToClipboard;
             t = new Thread(Run);
             t.Start();
         }
@@ -51,8 +54,10 @@ namespace IDGPU
                 text_output_interval = c["text-output-interval"].ToInt();
 
                 var cell = unit_cells[m.UnitCell];
-                var potentials = PairPotentials.LoadPotentialsFromFile(m, potentials_filename);
+                potentials = PairPotentials.LoadPotentialsFromFile(m, potentials_filename);
+                var crystal = Crystal.CreateCube(cell, c["edge-cells"].ToInt());
 
+                if (c.ContainsKey("optimize-tiling")) ForceDX11_IBC.OptimizeTiling(c["optimize-tiling"].ToDouble(), crystal, AppendText);
                 var techniques = new Dictionary<string, IForce>();
                 IForce technique = new ForceDX11_IBC();
                 techniques.Add(technique.Name, technique);
@@ -61,7 +66,7 @@ namespace IDGPU
                 technique = techniques[c["technique"]];
 
                 int finish_steps = c.GetTimeInSteps("finish-at");
-                MDIBC md = new MDIBC(c, Crystal.CreateCube(cell, c["edge-cells"].ToInt()), potentials[c["potentials"]], technique, AppendText);
+                MDIBC md = new MDIBC(c, crystal, potentials[c["potentials"]], technique, AppendText);
                 Clock clock = new Clock();
 
                 Paused = false;
@@ -122,6 +127,16 @@ namespace IDGPU
             Clipboard.SetText(textBoxOut.Text);
         }
 
-        Thread t;
+        private void copyToClipboard(string s)
+        {
+            if (InvokeRequired)
+            {
+                Invoke(new Action<string>(copyToClipboard), s);
+                return;
+            }
+            Clipboard.SetText(s);
+        }
+
+        private Thread t;
     }
 }

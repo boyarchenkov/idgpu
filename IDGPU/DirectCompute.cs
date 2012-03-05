@@ -379,7 +379,7 @@ namespace DirectCompute
             public Kernel Get(string entry_point, string parameters)
             {
                 Kernel s = kernels.ContainsKey(entry_point) ? kernels[entry_point] : null;
-                if (s != null && parameters == this.parameters) return s;
+                //if (s != null && parameters == this.parameters) return s; // It is better not to recompile kernel, but it is implicitly binded to texture sizes
                 if (s != null) s.Dispose();
                 kernels[entry_point] = s = device.CompileShader(parameters + source, entry_point, "cs_5_0", flags);
                 this.parameters = parameters;
