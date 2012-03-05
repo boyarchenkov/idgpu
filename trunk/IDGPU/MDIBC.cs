@@ -153,7 +153,7 @@ namespace IDGPU
             if (step % energy_interval == 0)
             {
                 energy = technique.Energy() + k3N * T_system / 2;
-                energies.Enqueue(energy); if (energies.Count > autosave / output) energies.Dequeue();
+                energies.Enqueue(energy); if (energies.Count * energy_interval > autosave) energies.Dequeue();
             }
             else
             {
