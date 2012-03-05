@@ -103,7 +103,7 @@ namespace IDGPU
                 if (texture_size.ContainsKey(ions)) width = texture_size[ions][0];
                 else
                 {
-                    var size = texture_size.FirstOrDefault(pair => pair.Key < ions).Value ?? new int[] { width };
+                    var size = texture_size.FirstOrDefault(pair => pair.Key < ions).Value ?? new[] { width };
                     width = size[0]; // select parameters for the nearest number of ions
                 }
             }
