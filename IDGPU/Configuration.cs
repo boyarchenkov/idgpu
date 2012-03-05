@@ -74,7 +74,7 @@ namespace IDGPU
             }
             return dt;
         }
-        public int GetTimeInSteps(string key)
+        public double GetTimeInFractionalSteps(string key)
         {
             double dt = Get_dt_in_fs(), value = 0;
             var values = Get(key);
@@ -92,7 +92,11 @@ namespace IDGPU
                         case "sec": value *= 1e+15 / dt; break;
                     }
             }
-            return (int)Math.Round(value);
+            return value;
+        }
+        public int GetTimeInSteps(string key)
+        {
+            return (int)Math.Round(GetTimeInFractionalSteps(key));
         }
         public double GetTemperatureInKelvins(string key)
         {

@@ -19,6 +19,7 @@ namespace IDGPU
 
         public static double dt = 0.5; // in 1e-14 sec
         public static double T = 2400; // in K
+        public static double kJ_mol; // Conversion factor of energy to kJ/mol
 
         public int Ions { get { return type.Length; } }
         public int Step { get { return step; } }
@@ -34,6 +35,7 @@ namespace IDGPU
 
         public MDIBC(Configuration cfg, Crystal c, PairPotentials pp, IForce technique, Action<string> append_text)
         {
+            edge_cells = c.EdgeCells;
             dt = cfg.Get_dt_in_fs() / 10.0;
             T = cfg.GetTemperatureInKelvins("T");
             rfr_intervals = cfg["rfr-intervals"].ToInt();
@@ -41,7 +43,10 @@ namespace IDGPU
             energy_interval = cfg.GetTimeInSteps("energy-interval");
             relaxation = cfg.GetTimeInSteps("relaxation");
             autosave = cfg.GetTimeInSteps("autosave");
+            tau_t = cfg.GetTimeInFractionalSteps("tau-t");
+            tau_t_relaxation = cfg.GetTimeInFractionalSteps("tau-t-relaxation");
 
+            kJ_mol = 96.485 / c.Ions * c.Cell.IonsInMolecule;
             this.c = c;
             this.pp = pp;
             this.technique = technique;
@@ -62,8 +67,8 @@ namespace IDGPU
             k3N = Kb * 3 * Ions;
             T_system = Temperature();
 
-            rfr_radius = Period * c.EdgeCells * 0.5; skip_intervals = (int)(rfr_intervals / (c.EdgeCells * 0.5));
-            if (c.EdgeCells == 4) skip_intervals = (9 * skip_intervals) / 10;
+            rfr_radius = Period * edge_cells * 0.5; skip_intervals = (int)(rfr_intervals / (edge_cells * 0.5));
+            if (edge_cells == 4) skip_intervals = (9 * skip_intervals) / 10;
 
             // Sort ions by type (for unrolls)
             int i, j, k;
@@ -92,7 +97,7 @@ namespace IDGPU
             var root = XDocument.Load(filename).Root;
             var m = MainForm.materials[root.Attribute("material").Value];
             pp = PairPotentials.LoadPotentialsFromFile(m, MainForm.potentials_filename)[root.Attribute("potentials").Value];
-            c = Crystal.CreateCube(MainForm.unit_cells[m.UnitCell], root.Int("edge-cells"));
+            edge_cells = root.Int("edge-cells");
             T = root.Double("T");
             dt = root.Double("timestep");
             autosave = root.Int("autosave-step");
@@ -125,7 +130,7 @@ namespace IDGPU
                     new XElement("Simulation",
                         new XAttribute("material", pp.Material.Formula),
                         new XAttribute("potentials", pp.Name),
-                        new XAttribute("edge-cells", c.EdgeCells),
+                        new XAttribute("edge-cells", edge_cells),
                         new XAttribute("T", T),
                         new XAttribute("timestep", dt),
                         new XAttribute("autosave-step", autosave),
@@ -152,7 +157,7 @@ namespace IDGPU
             technique.SetPositions(pos, acc);
             if (step % energy_interval == 0)
             {
-                energy = technique.Energy() + k3N * T_system / 2;
+                energy = (technique.Energy() + k3N * T_system / 2) * kJ_mol;
                 energies.Enqueue(energy); if (energies.Count * energy_interval > autosave) energies.Dequeue();
             }
             else
@@ -193,12 +198,12 @@ namespace IDGPU
             T_mean = 0; foreach (double t in temperatures) T_mean += t; T_mean /= temperatures.Count;
             mean_temperatures.Enqueue(T_mean); if (mean_temperatures.Count > autosave) mean_temperatures.Dequeue();
 
-            double tau_in_ps = step < relaxation ? 0.1 : 1, tau_in_steps = tau_in_ps / (0.01 * dt);
-            for (i = 0; i < Ions; i++) vel[i] *= Math.Sqrt(1 + (T / T_system - 1) / tau_in_steps); // Berendsen, if tau = 1 step then DumbVelScaling
+            double tau = step < relaxation ? tau_t_relaxation : tau_t;
+            for (i = 0; i < Ions; i++) vel[i] *= Math.Sqrt(1 + (T / T_system - 1) / tau); // Berendsen, if tau = 1 step then DumbVelScaling
         }
         private void RevertEvaporatedParticles()
         {
-            double r2 = 2 * c.EdgeCells * c.EdgeCells * Period * Period; // Some empirical radius of bounding sphere
+            double r2 = 2 * edge_cells * edge_cells * Period * Period; // Some empirical radius of bounding sphere
             for (int i = 0; i < Ions; i++)
             {
                 if (pos[i].LengthSq() > r2)
@@ -253,7 +258,7 @@ namespace IDGPU
             periods.Enqueue((double)Math.Pow(4 / density[1], 1 / 3.0)); if (periods.Count > output) periods.Dequeue();
             period = 0; foreach (double p in periods) period += p; period /= periods.Count;
             mean_periods.Enqueue(Period); if (mean_periods.Count > autosave) mean_periods.Dequeue();
-            rfr_radius = (double)(Period * c.EdgeCells * 0.5);
+            rfr_radius = (double)(Period * edge_cells * 0.5);
         }
         public void Update()
         {
@@ -294,7 +299,7 @@ namespace IDGPU
         private Crystal c;
 
         // Current state
-        private int step;
+        private int step, edge_cells;
         private double T_mean, T_system, period, i_period, energy, rfr_radius, k3N;
         private IndexableQueue<double> periods, mean_periods, temperatures, mean_temperatures, energies;
         private IndexableQueue<double> i_periods, i_mean_periods; // Bulk (internal) lattice period
@@ -303,12 +308,13 @@ namespace IDGPU
         public Double3[] pos, vel, acc;
 
         // Parameters of simulation
-        private int relaxation = 1000; // 5 ps
-        private int rfr_intervals = 1000, skip_intervals; // for density computation
+        private double tau_t = 200, tau_t_relaxation = 20; // in steps
+        private int relaxation = 1000; // in steps
+        private int rfr_intervals = 1000, skip_intervals; // For density computation
 
         // Parameters of output
-        private int output = 200; // 1 ps
-        private int energy_interval = 200; // 1 ps
-        public static int autosave = 5000; // 25 ps
+        private int output = 200; // in steps
+        private int energy_interval = 200; // in steps
+        public static int autosave = 5000; // in steps
     }
 }
