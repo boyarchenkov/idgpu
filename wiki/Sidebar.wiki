@@ -2,10 +2,10 @@
 
 English:
 
-[Summary]
-[Benchmark Calculation time]
+ * [Summary]
+ * [Benchmark Calculation time]
 
 Русский:
 
-[SummaryRussian Краткое описание]
-[BenchmarkRussian Скорость расчетов]
+ * [SummaryRussian Краткое описание]
+ * [BenchmarkRussian Скорость расчетов]
