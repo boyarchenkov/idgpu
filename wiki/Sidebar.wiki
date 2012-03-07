@@ -3,7 +3,9 @@
 English:
 
 [Summary]
+[Benchmark Calculation time]
 
 Русский:
 
 [SummaryRussian Краткое описание]
+[BenchmarkRussian Скорость расчетов]
