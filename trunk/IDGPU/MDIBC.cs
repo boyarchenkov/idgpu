@@ -200,15 +200,12 @@ namespace IDGPU
                     for (j = 0; j < Types; j++)
                         for (k = 0; k < 2; k++)
                             w.Write("{0:F3}\t", bilayer_dist[k][j].Dequeue());
-                    for (j = 0; j < Types; j++)
-                        for (k = 0; k < 2; k++)
-                            w.Write("{0:F0}\t", bilayer_count[k][j].Dequeue());
-                    for (j = 0; j < Types; j++)
-                        for (k = 0; k < edge_cells / 2; k++)
-                        {
-                            w.Write("{0:F3}\t", layer_dist[k][k][j][i / output - 1]);
-                            layer_count[k][k][j].Dequeue(); layer_dist[k][k][j].Dequeue();
-                        }
+                    //for (j = 0; j < Types; j++)
+                    //    for (k = 0; k < edge_cells / 2; k++)
+                    //    {
+                    //        w.Write("{0:F3}\t", layer_dist[k][k][j][i / output - 1]);
+                    //        layer_count[k][k][j].Dequeue(); layer_dist[k][k][j].Dequeue();
+                    //    }
                     w.WriteLine();
                 }
         }
