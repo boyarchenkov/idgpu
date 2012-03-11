@@ -4,7 +4,7 @@
 
 The current version has the following capabilities:
 
-  * Molecular dynamics simulation of uranium dioxide
+  * Molecular dynamics simulation of uranium dioxide (UO2) and plutonium dioxide (PuO2)
   * Isolated boundary conditions (systems with free surface)
   * Approximation of pair potentials and rigid ions
   * Using GPU for computation of pair forces and energy
@@ -44,3 +44,6 @@ Regularly the program save results to a file.
   * S.I. Potashnikov, A.S. Boyarchenkov, K.A. Nekrasov, A.Ya. Kupryazhkin, Molecular dynamics simulation of mass transport in uranium dioxide using graphics processors. ISJAEE 5(49), 86-93 (2007). [http://isjaee.hydrogen.ru/pdf/AEE0507/ISJAEE05-07_Potashnikov.pdf] (in Russian)
 
 = See also =
+
+ * [VersionHistory Version history]
+ * [Benchmark]
