@@ -46,4 +46,4 @@
 = См. также =
 
  * [VersionHistoryRussian История изменений]
- * [BenchmarkRussian] Скорость расчетов]
+ * [BenchmarkRussian Скорость расчетов]
