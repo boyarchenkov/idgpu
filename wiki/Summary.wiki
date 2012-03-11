@@ -46,4 +46,4 @@ Regularly the program save results to a file.
 = See also =
 
  * [VersionHistory Version history]
- * [Benchmark]
+ * [Benchmark Calculation time]
