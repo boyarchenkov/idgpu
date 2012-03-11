@@ -45,5 +45,5 @@
 
 = См. также =
 
- * [VersionHistoryRyssian История изменений]
+ * [VersionHistoryRussian История изменений]
  * [BenchmarkRussian] Скорость расчетов]
