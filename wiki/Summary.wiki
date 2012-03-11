@@ -4,7 +4,7 @@
 
 The current version has the following capabilities:
 
-  * Molecular dynamics simulation of uranium dioxide (UO2) and plutonium dioxide (PuO2)
+  * Molecular dynamics simulation of uranium dioxide (UO2) and plutonium dioxide (!PuO2)
   * Isolated boundary conditions (systems with free surface)
   * Approximation of pair potentials and rigid ions
   * Using GPU for computation of pair forces and energy
