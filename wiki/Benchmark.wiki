@@ -1,6 +1,6 @@
 #summary Calculation time.
 
-= Speed of direct summation of pair forces with interatomic potentials in form of Buckingham for UO2 =
+= Time (in seconds) of direct summation of pair forces with interatomic potentials in form of Buckingham for UO2 =
 
 || Year: || 2012 || 2011 || 2008 || 2007 ||
 || Platform: || !DirectCompute || !DirectCompute || CUDA || DirectX 9 (SM 3.0) || .NET Framework 4.0 ||
@@ -17,3 +17,5 @@
 || 49152 || 1.726654 || 0.066570 || 0.328090 || 0.774830 || _74.2_ ||
 || 69984 || 3.499939 || 0.133900 || 0.686240 || 1.625960 || _150_ ||
 || 96000 || 6.610199 || 0.248200 || 1.226000 || 2.939140 || _283_ ||
+
+Numbers formatted as italic in the last column are extrapolations.
