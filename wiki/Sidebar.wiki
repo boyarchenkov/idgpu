@@ -3,9 +3,11 @@
 English:
 
  * [Summary]
+ * [VersionHistory Version history]
  * [Benchmark Calculation time]
 
 Русский:
 
  * [SummaryRussian Краткое описание]
+ * [VersionHistoryRussian История изменений]
  * [BenchmarkRussian Скорость расчетов]
