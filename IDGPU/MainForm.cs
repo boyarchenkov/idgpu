@@ -71,6 +71,9 @@ namespace IDGPU
                 MDIBC md = new MDIBC(c, crystal, potentials[c["potentials"]], technique, AppendText);
                 Clock clock = new Clock();
 
+                var filename = c["load"];
+                if (filename.Length > 0) md.Load(filename);
+
                 Paused = false;
                 float besttime = 1000, mean_time = 0;
                 while (finish_steps == 0 || md.Step < finish_steps)
