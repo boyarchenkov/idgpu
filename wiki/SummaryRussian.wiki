@@ -16,7 +16,7 @@
   * 64-битная версия ОС Microsoft Windows
   * Microsoft DirectX 11
   * Microsoft .NET Framework 4.0
-  * DirectX 11 совместимая видеокарта (возможен также проведение расчета полностью на CPU)
+  * DirectX 11 совместимая видеокарта (возможно также проведение расчета полностью на CPU)
 
 == Для компиляции: ==
   * Microsoft Visual C# 2010
